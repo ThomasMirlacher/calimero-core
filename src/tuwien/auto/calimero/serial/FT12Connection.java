@@ -705,7 +705,9 @@ public class FT12Connection implements Connection<byte[]>
 
 		private boolean readFrame() throws IOException, InterruptedException
 		{
-			final byte[] header = is.readNBytes(3);
+			final byte[] header = new byte[3];
+			is.read(header, 0, 3);
+
 			// check end of stream
 			if (header.length != 3)
 				return false;
@@ -724,7 +726,9 @@ public class FT12Connection implements Connection<byte[]>
 
 			final int total = len + 2;
 			// read rest of frame, check header, ctrl, and end tag
-			final byte[] buf = is.readNBytes(total);
+			final byte[] buf = new byte[total];
+			is.read(buf, 0, total);
+
 			final int read = buf.length;
 			if (read == total && (buf[len + 1] & 0xff) == END) {
 				final byte chk = buf[buf.length - 2];

@@ -514,9 +514,9 @@ public class Discoverer
 			final Srp... searchParameters) {
 		if (timeout.isNegative())
 			throw new KNXIllegalArgumentException("timeout has to be >= 0");
-		final NetworkInterface[] nifs;
+		final java.util.Enumeration<java.net.NetworkInterface> nifs;
 		try {
-			nifs = NetworkInterface.networkInterfaces().toArray(NetworkInterface[]::new);
+			nifs = java.net.NetworkInterface.getNetworkInterfaces();
 		}
 		catch (final SocketException e) {
 			return CompletableFuture.failedFuture(e);
@@ -525,7 +525,7 @@ public class Discoverer
 		boolean lo = false;
 		final List<CompletableFuture<Void>> cfs = new ArrayList<>();
 		final var responses = Collections.<Result<SearchResponse>>newSetFromMap(new ConcurrentHashMap<>());
-		for (final NetworkInterface ni : nifs) {
+		for (final java.net.NetworkInterface ni: java.util.Collections.list(nifs)) {
 			// find one IP address we can use for our search on this interface
 			for (final Enumeration<InetAddress> ea = ni.getInetAddresses(); ea.hasMoreElements();) {
 				final InetAddress a = ea.nextElement();

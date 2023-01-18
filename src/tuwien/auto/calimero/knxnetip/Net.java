@@ -71,12 +71,19 @@ final class Net {
 	// finds a local IPv4 address with its network prefix "matching" the remote address
 	static Optional<InetAddress> onSameSubnet(final InetAddress remote) {
 		try {
-			return NetworkInterface.networkInterfaces().flatMap(ni -> ni.getInterfaceAddresses().stream())
-					.filter(ia -> ia.getAddress() instanceof Inet4Address)
-					.peek(ia -> logger.trace("match local address {}/{} to {}", ia.getAddress().getHostAddress(),
-							ia.getNetworkPrefixLength(), remote.getHostAddress()))
-					.filter(ia -> matchesPrefix(ia.getAddress(), ia.getNetworkPrefixLength(), remote))
-					.map(ia -> ia.getAddress()).findFirst();
+			java.util.Enumeration<java.net.NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+
+			for (NetworkInterface ni: java.util.Collections.list(nets)) {
+				Optional<InetAddress> addr = ni.getInterfaceAddresses().stream()
+						.filter(ia -> ia.getAddress() instanceof Inet4Address)
+						.peek(ia -> logger.trace("match local address {}/{} to {}", ia.getAddress().getHostAddress(),
+								ia.getNetworkPrefixLength(), remote.getHostAddress()))
+						.filter(ia -> matchesPrefix(ia.getAddress(), ia.getNetworkPrefixLength(), remote))
+						.map(ia -> ia.getAddress()).findFirst();
+				if (addr.isPresent()) {
+					return addr;
+				}
+			}
 		}
 		catch (final SocketException ignore) {}
 		return Optional.empty();

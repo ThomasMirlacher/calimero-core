@@ -110,14 +110,15 @@ public class DeviceDIB extends DIB
 		status = is.read();
 		address = new IndividualAddress(new byte[] { (byte) is.read(), (byte) is.read() });
 		installationId = (is.read() << 8) | is.read();
-		try {
-			serial = SerialNumber.from(is.readNBytes(SerialNumber.Size));
-			mcast = is.readNBytes(4);
-			mac = is.readNBytes(6);
-		}
-		catch (final IOException e) {
-			throw new KNXFormatException("device DIB initialization", e);
-		}
+
+		byte[] serialBytes = new byte[SerialNumber.Size];
+		mcast = new byte[4];
+		mac = new byte[6];
+
+		is.read(serialBytes, 0, SerialNumber.Size);
+		serial = SerialNumber.from(serialBytes);
+		is.read(mcast, 0, 4);
+		is.read(mac, 0, 6);
 
 		// device friendly name is optional
 		final StringBuilder sbuf = new StringBuilder(30);
